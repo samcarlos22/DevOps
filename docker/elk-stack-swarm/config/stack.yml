@@ -1,0 +1,149 @@
+version: "3.3"
+
+networks:
+  elasticsearch:
+    driver: overlay
+
+volumes:
+  esdata:
+
+services:
+
+  logspout:
+    image: gliderlabs/logspout:latest
+    networks:
+      - elasticsearch
+    volumes:
+      - /etc/hostname:/etc/host_hostname:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      syslog://logstash:5000
+    deploy:
+      mode: global
+
+  portainer:
+    image: portainer/portainer
+    command: --admin-password '' --host=unix:///var/run/docker.sock
+    ports:
+      - 9000:9000
+    networks:
+      - elasticsearch
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+         - node.role == manager
+         
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+    environment:
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - "network.host=0.0.0.0"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      - "xpack.security.enabled=false"
+      - "xpack.monitoring.enabled=true"
+      - "xpack.watcher.enabled=false"
+      - "xpack.ml.enabled=false"
+      - "discovery.zen.minimum_master_nodes=1"
+    networks:
+      - elasticsearch
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    deploy:
+      mode: global
+      endpoint_mode: dnsrr
+      placement:
+        constraints: [node.labels.app_role == elasticsearch]
+
+  auth_elasticsearch:
+    image: quay.io/dtan4/nginx-basic-auth-proxy:latest
+    ports:
+      - 9200:80
+    networks:
+      - elasticsearch
+    environment:
+      - BASIC_AUTH_USERNAME=admin
+      - BASIC_AUTH_PASSWORD=admin
+      - PROXY_PASS=http://elasticsearch:9200/
+    deploy:
+      mode: 'global'
+      placement:
+        constraints: [node.labels.app_role == elasticsearch]
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.2.4
+    networks:
+      - elasticsearch
+    environment:
+      - "xpack.security.enabled=false"
+    deploy:
+      mode: global
+      placement:
+          constraints: [node.labels.app_role == elasticsearch]
+
+  auth_kibana:
+    image: quay.io/dtan4/nginx-basic-auth-proxy:latest
+    ports:
+      - 5601:80
+    networks:
+      - elasticsearch
+    environment:
+      - BASIC_AUTH_USERNAME=admin
+      - BASIC_AUTH_PASSWORD=admin
+      - PROXY_PASS=http://kibana:5601/
+    deploy:
+      mode: 'global'
+      placement:
+        constraints: [node.labels.app_role == elasticsearch]
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:6.2.4
+    command: -f /usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - elasticsearch
+    ports:
+      - 5000:5000
+      - 5000:5000/udp
+    volumes:
+     - ../logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    deploy:
+      mode: 'global'
+      placement:
+        constraints: [node.labels.app_role == elasticsearch]
+    
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:6.3.0
+    command: -strict.perms=false 
+    user: root
+    networks:
+      - elasticsearch
+    ports:
+      - 5555:5555
+    volumes:
+      - /var/log:/var/log
+      - ../filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    deploy:
+      mode: 'global'
+      placement:
+        constraints: [node.labels.app_role == elasticsearch]
+
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:6.2.4
+    command: -strict.perms=false -system.hostfs=/hostfs
+    user: root
+    networks:
+      - elasticsearch
+    volumes:
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+    deploy:
+      mode: 'global'
+      placement:
+        constraints: [node.labels.app_role == elasticsearch]
+
+

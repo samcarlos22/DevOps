@@ -1,0 +1,12 @@
+filebeat.prospectors:
+filebeat.inputs:
+- type: syslog
+  protocol.tcp:
+    host: "localhost:5555"
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+setup.kibana:
+  setup.dashboards.enabled: true
+  host: "kibana:5601"
