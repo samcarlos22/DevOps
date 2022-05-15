@@ -1,0 +1,14 @@
+[rpi]
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address
+
+[jetson]
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address
+
+[ups]
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address
+hostname ansible_ssh_port=port ansible_ssh_host=ip_address

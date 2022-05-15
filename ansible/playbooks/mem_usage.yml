@@ -1,0 +1,54 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: get resource info rpi
+      when: inventory_hostname in groups['rpi']
+      remote_user: username
+      script:
+        cmd: ../scripts/mem_usage.sh
+        args:
+          creates: /home/username/{{ inventory_hostname }}
+
+    - name: get resource info ups
+      when: inventory_hostname in groups['ups']
+      remote_user: username
+      script:
+        cmd: ../scripts/mem_usage.sh
+        args:
+          creates: /home/username/{{ inventory_hostname }}
+
+    - name: get resource info jetson
+      when: inventory_hostname in groups['jetson']
+      remote_user: username
+      script:
+        cmd: ../scripts/mem_usage.sh
+        args:
+          creates: /home/username/{{ inventory_hostname }}
+
+    - name: fetch result rpi
+      when: inventory_hostname in groups['rpi']
+      remote_user: username
+      fetch:
+        src: /home/username/{{ inventory_hostname }}
+        dest: ../fetch/
+        flat: yes
+
+    - name: fetch result upsquared
+      when: inventory_hostname in groups['ups']
+      remote_user: username
+      fetch:
+        src: /home/username/{{ inventory_hostname }}
+        dest: ../fetch/
+        flat: yes
+
+    - name: fetch result jetson
+      when: inventory_hostname in groups['jetson']
+      remote_user: username
+      fetch:
+        src: /home/username/{{ inventory_hostname }}
+        dest: ../fetch/
+        flat: yes
+
+    - name: merge results
+      local_action: shell echo "Hostname, Date&Time, CPU%, Mem%, Disk%" > ../reports/usage_report.csv && cat ../fetch/* >> ../reports/usage_report.csv

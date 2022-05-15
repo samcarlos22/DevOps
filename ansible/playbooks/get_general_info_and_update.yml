@@ -1,0 +1,4 @@
+---
+- import_playbook: ./playbooks/mem_usage.yml
+- import_playbook: ./playbooks/system_info.yml
+- import_playbook: ./playbooks/update.yml

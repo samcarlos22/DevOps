@@ -1,0 +1,34 @@
+---
+- hosts: all
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: update rpi
+      when: inventory_hostname in groups['rpi']
+      remote_user: username
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+        upgrade: safe
+        autoremove: yes
+        autoclean: yes
+
+    - name: update ups
+      when: inventory_hostname in groups['ups']
+      remote_user: username
+      apt:
+        force_apt_get: yes
+        update_cache: yes
+        upgrade: safe
+        autoremove: yes
+        autoclean: yes
+
+    - name: update jetson
+      when: inventory_hostname in groups['jetson']
+      remote_user: username
+      apt:
+        force_apt_get: yes
+        update_cache: yes
+        upgrade: safe
+        autoremove: yes
+        autoclean: yes
