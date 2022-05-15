@@ -1,0 +1,14 @@
+file_roots:
+  base:
+    - /srv/salt/
+
+pillar_roots:
+  base:
+    - /srv/pillar
+
+thorium_roots:
+  base:
+    - /srv/thorium
+
+engines:
+  - thorium: {}

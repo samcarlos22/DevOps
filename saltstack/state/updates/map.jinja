@@ -1,0 +1,19 @@
+{% set updates = salt['grains.filter_by']({
+    'Debian': {
+        'module': 'pkg.uptodate',
+        'drivers': '',
+        'categories': [''],
+    },
+    'Ubuntu': {
+        'module': 'pkg.uptodate',
+        'drivers': '',
+        'categories': [''],
+    },
+    'Windows': {
+        'drivers': 'false',
+        'categories': ['Critical Updates', 'Security Updates'],
+        'module': 'wua.uptodate',
+    },
+}, merge=salt['pillar.get']('updates:lookup')) %}
+
+

@@ -1,0 +1,20 @@
+{% set users = salt['grains.filter_by']({
+    'Debian': {
+        'name': 'admin1',
+        'fullname': 'admin1',
+        'groups': ['sudo'],
+        'module': 'user.present',
+    },
+    'Ubuntu': {
+        'name': 'admin2',
+        'fullname': 'admin2',
+        'groups': ['sudo', 'admin1'],
+        'module': 'user.present',
+    },
+    'Windows': {
+        'name': 'admin1',
+        'fullname': 'admin1',
+        'groups': ['Administrators'],
+        'module': 'user.present',
+    },
+}, merge=salt['pillar.get']('users:lookup')) %}

@@ -1,0 +1,7 @@
+{% set lvm = salt['grains.filter_by']({
+    'Debian': {
+        'device': '/dev/sdb',
+        'vgname': 'vgs',
+        'size': '10G',
+    },
+}, merge=salt['pillar.get']('users:lookup')) %}
